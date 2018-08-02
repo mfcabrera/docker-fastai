@@ -1,4 +1,4 @@
-FROM nvidia/cuda:9.0-devel-ubuntu16.04
+FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -17,8 +17,9 @@ RUN curl -qsSLkO \
 
 ENV PATH=/root/miniconda3/bin:$PATH
 
-RUN curl -qsSLkO https://raw.githubusercontent.com/fastai/fastai/master/environment.yml \
-    && conda update -y conda && conda env update -n root
+COPY environment.yml .
+
+RUN conda update -y conda && conda env update -n root
 
 
 RUN conda install -y \
@@ -32,12 +33,14 @@ RUN conda install -y \
     https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.5.0-cp36-cp36m-linux_x86_64.whl
 
 
-
-ENV LD_LIBRARY_PATH=/root/miniconda3/lib/:/usr/local/cuda:/usr/local/cuda/lib64:/usr/local/cuda/lib64/stubs
+ENV LD_LIBRARY_PATH=/root/miniconda3/lib:/usr/local/cuda/lib6/usr/local/cuda/lib64/stubs:/usr/local/nvidia/lib64
+ENV PATH=/root/miniconda3/bin:$PATH:/usr/local/nvidia/bin/
 
 RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+RUN ln -s /bin/bash /usr/bin/bash
 
-
+RUN conda install -c conda-forge -y ipywidgets && \
+    jupyter nbextensions_configurator enable --user && jupyter nbextension enable --py widgetsnbextension
 
 VOLUME /notebook
 WORKDIR /notebook
