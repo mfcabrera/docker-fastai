@@ -5,6 +5,7 @@ RUN apt-get update \
     build-essential \
     curl \
     git \
+    wget locales libxml2 libxml2-dev libxslt-dev \
     libfontconfig1 libxrender1 \
     libsm6 libxext6   libglu1-mesa \
     ca-certificates \
@@ -25,12 +26,12 @@ RUN conda update -y conda && conda env update -n root
 RUN conda install -y \
     h5py \
     pandas \
-    theano \
+    theano  \
   && conda clean --yes --tarballs --packages --source-cache \
   && pip install --upgrade -I setuptools \
   && pip install --upgrade \
     keras future \
-    https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.5.0-cp36-cp36m-linux_x86_64.whl
+    https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.10.0-cp36-cp36m-linux_x86_64.whl
 
 
 ENV LD_LIBRARY_PATH=/root/miniconda3/lib:/usr/local/cuda/lib6/usr/local/cuda/lib64/stubs:/usr/local/nvidia/lib64
@@ -41,6 +42,15 @@ RUN ln -s /bin/bash /usr/bin/bash
 
 RUN conda install -c conda-forge -y ipywidgets && \
     jupyter nbextensions_configurator enable --user && jupyter nbextension enable --py widgetsnbextension
+
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+
+# Install MXNET Nightly build and gluon
+RUN pip install mxnet-cu90mkl --pre
+RUN pip install gluonnlp
 
 VOLUME /notebook
 WORKDIR /notebook
